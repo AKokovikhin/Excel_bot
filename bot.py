@@ -44,13 +44,14 @@ async def handle_message(message: types.Message):
     await message.answer("🤔 Думаю...")
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-            max_tokens=400
+        # Используем новый формат запроса к API OpenAI
+        response = openai.Completion.create(
+            model="gpt-3.5-turbo",  # Используем GPT-3.5
+            prompt=prompt,
+            max_tokens=400,
+            temperature=0.5
         )
-        reply = response.choices[0].message.content.strip()
+        reply = response.choices[0].text.strip()
         await message.answer(reply)
     except Exception as e:
         logging.exception(e)
