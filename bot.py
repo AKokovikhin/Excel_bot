@@ -1,7 +1,8 @@
 import openai
 import logging
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ParseMode
+from aiogram import Bot, Dispatcher, types
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram import Router
 from dotenv import load_dotenv
 import os
 
@@ -15,8 +16,9 @@ openai.api_key = OPENAI_API_KEY
 logging.basicConfig(level=logging.INFO)
 
 # Инициализация бота и диспетчера
-bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
-dp = Dispatcher(bot)
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
+router = Router()
 
 PROMPT_TEMPLATE = """
 Ты — помощник по Microsoft Excel и Google Таблицам.
@@ -25,9 +27,7 @@ PROMPT_TEMPLATE = """
 """
 
 # Обработчик команды /start
-
-
-@dp.message_handler(commands=['start'])
+@router.message(commands=['start'])
 async def start(message: types.Message):
     await message.answer(
         "Привет! Я бот-помощник по Excel и Google Таблицам.\n"
@@ -35,9 +35,7 @@ async def start(message: types.Message):
     )
 
 # Обработчик текстовых сообщений
-
-
-@dp.message_handler()
+@router.message()
 async def handle_message(message: types.Message):
     question = message.text.strip()
     prompt = PROMPT_TEMPLATE.format(question)
@@ -57,6 +55,11 @@ async def handle_message(message: types.Message):
         logging.exception(e)
         await message.answer("⚠️ Произошла ошибка при обращении к OpenAI. Попробуй позже.")
 
-# Запуск бота
+async def main():
+    # Регистрируем маршруты (обработчики)
+    dp.include_router(router)
+    await dp.start_polling(bot)
+
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    import asyncio
+    asyncio.run(main())
