@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Router
+from aiogram.filters import Command
 from dotenv import load_dotenv
 import os
 
@@ -27,7 +28,7 @@ PROMPT_TEMPLATE = """
 """
 
 # Обработчик команды /start
-@router.message(commands=['start'])
+@router.message(Command('start'))
 async def start(message: types.Message):
     await message.answer(
         "Привет! Я бот-помощник по Excel и Google Таблицам.\n"
